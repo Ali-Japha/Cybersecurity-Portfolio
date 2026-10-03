@@ -1,0 +1,52 @@
+# Linux Command-Line Security & Administration Reference
+**Client:** SmileCare Dental Clinic - IT Operations Team
+**Prepared By:** Muhammad Ali Hussain, Cybersecurity Consultant
+**Date:** October 2026
+
+## Executive Summary
+This reference guide provides the SmileCare Dental Clinic IT staff with standardized command-line procedures for secure server administration, log triage, and preliminary incident response. These commands bypass graphical interfaces to interact directly with the Linux kernel, ensuring reliable execution during system audits or suspected compromises.
+
+---
+
+## 1. Secure Remote Access & Navigation
+Standard procedures for accessing clinic servers and navigating the file system.
+
+*   **Initiate Secure Connection:** 
+    `ssh username@hostname -p [port_number]`
+    *Use SSH (Secure Shell) rather than Telnet to ensure all administrative traffic is encrypted. Specify non-standard ports (e.g., `-p 2220`) if the server is hardened against default port scanning.*
+*   **Reveal Hidden System Files:** 
+    `ls -a`
+    *Files and directories beginning with a dot (e.g., `.hidden_config`) are hidden from standard views. Attackers frequently use hidden directories to stash malicious scripts.*
+
+## 2. Forensic File Investigation 
+Techniques for safely interacting with misnamed, corrupted, or hostile files.
+
+*   **Bypassing Special Characters in Filenames:**
+    `cat "./--malicious file name--"`
+    *If a file contains spaces or begins with dashes (often done deliberately to break administrative scripts), prepend `./` to force the system to read it as a literal file path, and enclose it in quotes.*
+*   **Identify True File Types (Magic Bytes):**
+    `file ./*`
+    *Never trust file extensions (e.g., `.pdf` or `.txt`). The `file` command reads the internal binary header to determine if a suspected text document is actually a compiled executable.*
+
+## 3. Automated Auditing & Search 
+Locating specific data without manually traversing directories.
+
+*   **Locate Files by Strict Attributes:**
+    `find / -type f -user [username] -size [bytes]c 2>/dev/null`
+    *Searches the entire server (`/`) for files matching precise criteria. The `2>/dev/null` appendage is critical: it drops all "Permission denied" errors into a black hole, keeping the terminal output clean and readable.*
+
+## 4. Log Triage & Data Extraction
+Methods for filtering massive log files and identifying obfuscated data.
+
+*   **Filter Logs for Specific Events:**
+    `grep "failed login" /var/log/auth.log`
+    *Extracts only the lines containing the target string, ignoring the rest of the noise.*
+*   **Extract Unique Entries (Pipeline):**
+    `sort access.log | uniq -u`
+    *Chains commands using the pipe (`|`). Sorts the data first, then uses `uniq -u` to isolate anomalies or single-occurrence events.*
+*   **Analyze Suspicious Binaries:**
+    `strings suspicious_file.elf | grep "http"`
+    *Extracts human-readable text from compiled, non-readable binary files. Useful for instantly finding hardcoded command-and-control IP addresses or URLs in malware.*
+*   **Decode Obfuscated Traffic/Scripts:**
+    `base64 -d encoded_file.txt`
+    *Decodes Base64 data. Threat actors routinely use Base64 to disguise malicious PowerShell commands or hide data being exfiltrated from the clinic's network.*
